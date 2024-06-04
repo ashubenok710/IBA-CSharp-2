@@ -17,7 +17,7 @@
     private static Dictionary<char, int> GetWordAsDictionary(string word) 
     { 
         return word.ToLower()
-            .Where(c => Char.IsLetter(c))
+            .Where(c => char.IsLetter(c))
             .GroupBy(c => c)
             .ToDictionary(k => k.Key, v => v.Count());
     }
@@ -30,17 +30,8 @@
 
         foreach (var item in d2)
         {
-            if (d1.ContainsKey(item.Key))
-            {
-                if (item.Value > d1[item.Key])
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
+            if (!d1.ContainsKey(item.Key)) return false;
+            if (item.Value > d1[item.Key]) return false;             
         }
 
         return true;
@@ -69,7 +60,7 @@
     {            
         int step = 0;
 
-        System.Console.WriteLine($"Пользователь, введите слово для начала игры от " + WORD_LENGTH_FROM + " до " + WORD_LENGTH_TO + " символов");
+        Console.WriteLine($"Пользователь, введите слово для начала игры от " + WORD_LENGTH_FROM + " до " + WORD_LENGTH_TO + " символов");
         string word;
         while (true)
         {
@@ -82,15 +73,15 @@
             }
             else
             {
-                System.Console.WriteLine($"Слово для игры не может быть меньше " + WORD_LENGTH_FROM + " и больше " + WORD_LENGTH_TO + " символов.");
+                Console.WriteLine($"Слово для игры не может быть меньше " + WORD_LENGTH_FROM + " и больше " + WORD_LENGTH_TO + " символов.");
             }
         }
 
-        System.Console.WriteLine($"Слово для игры: {word}");
+        Console.WriteLine($"Слово для игры: {word}");
 
         while (!endGame)
         {
-            System.Console.Write($"{GetPlayerName(step)} : ");
+            Console.Write($"{GetPlayerName(step)} : ");
             string newWord = Console.ReadLine();
 
             CheckWord(word, newWord);
@@ -98,7 +89,7 @@
             step++;
         }
 
-        System.Console.WriteLine($"\nПобедил {GetPlayerName(step)} !!!");
+        Console.WriteLine($"\nПобедил {GetPlayerName(step)} !!!");
 
     }
 
