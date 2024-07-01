@@ -158,7 +158,7 @@ public class Game
         switch (command)
         {
             case "/show-words":
-                Console.WriteLine($"Слова: {string.Join(", ", words)}\n" );
+                PrintWords();                
                 break;
             case "/score":
                 PrintScore();
@@ -209,6 +209,19 @@ public class Game
     {               
         File.WriteAllText(HISTORY_FILE, JsonConvert.SerializeObject(Games, Formatting.Indented));
     }
+    
+    private void PrintWords()
+    {
+        if (words.Count > 0) 
+        {
+            Console.WriteLine($"Слова: {string.Join(", ", words)}\n");
+        }
+        else
+        {
+            Console.WriteLine($"В игре слова еще не введены\n");
+        }
+
+    }
 
     private void PrintScore()
     {
@@ -224,6 +237,10 @@ public class Game
                 }
             }
             Console.WriteLine();
+        }
+        else
+        {
+            Console.WriteLine($"Общий счет по играм для текущих игроков не найден\n");
         }
     }
 
