@@ -280,8 +280,15 @@ public class Game
 
     private void ReadGames()
     {
-        var json = File.ReadAllText(HISTORY_FILE);
-        Games = JsonConvert.DeserializeObject<List<GameResult>>(json);
+        try
+        {
+            var json = File.ReadAllText(HISTORY_FILE);
+            Games = JsonConvert.DeserializeObject<List<GameResult>>(json);
+        }
+        catch
+        {
+            Games = new List<GameResult>();
+        }        
     }
 
 }
