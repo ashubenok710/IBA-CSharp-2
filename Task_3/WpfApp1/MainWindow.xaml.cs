@@ -11,6 +11,7 @@ using WpfApp1.Model;
 using WpfApp1.Pagination;
 using System.Runtime.Serialization;
 using System.Xml;
+using Microsoft.EntityFrameworkCore;
 
 namespace WpfApp1
 {
@@ -94,39 +95,36 @@ namespace WpfApp1
             PageInfo.Content = PageNumberDisplay();
         }
 
-        private void Apply_Click(object sender, RoutedEventArgs e)
+        private async void Apply_Click(object sender, RoutedEventArgs e)
         {
-            var selectedDate = datePicker.SelectedDate;                       
+            var selectedDate = datePicker.SelectedDate;
 
-            PeopleList = DBContext.People.Where(x => 
-                (string.IsNullOrWhiteSpace(x.FirstName) || x.FirstName.Contains(txtFirstName.Text)) &&
-                (selectedDate == null || (x.Date == selectedDate)) &&            
-                (string.IsNullOrWhiteSpace(x.Country) || x.Country.Contains(txtCountry.Text)) && 
-                (string.IsNullOrWhiteSpace(x.City) || x.City.Contains(txtCity.Text)))
-                    .OrderBy(b => b.City)
-                    .ThenBy(b => b.FirstName)
-                    .AsQueryable()
-                    .ToList();
+            var query = DBContext.People.AsQueryable();
 
-            DataTable table = PagedTable.SetPaging(ConvertToListOf<Person>(PeopleList.ToList()), NumberOfRecPerPage);
-            table.DefaultView.AllowNew = false; 
+            query = DBContext.People.Where(person =>
+                (string.IsNullOrWhiteSpace(person.FirstName) || person.FirstName.Contains(txtFirstName.Text)) &&
+                (selectedDate == null || (person.Date == selectedDate)) &&
+                (string.IsNullOrWhiteSpace(person.Country) || person.Country.Contains(txtCountry.Text)) &&
+                (string.IsNullOrWhiteSpace(person.City) || person.City.Contains(txtCity.Text)));
+
+            query = query.OrderBy(person => person.Date)
+                .ThenBy(person => person.Country)
+                .ThenBy(person => person.City)
+                .ThenBy(person => person.FirstName);                    
+
+            PeopleList = await query.ToListAsync();
+
+            DataTable table = PagedTable.SetPaging(PeopleList.ToList(), NumberOfRecPerPage);            
+            table.DefaultView.AllowNew = false;
+                        
             DisplayGrid.ItemsSource = table.DefaultView;
+            DisplayGrid.AutoGenerateColumns = true;            
 
             PageInfo.Content = PageNumberDisplay();
 
-            SetButtons(PeopleList.Count > 0 ? true : false); 
+            SetButtons(PeopleList.Any());
         }
-
-        private static IList<T> ConvertToListOf<T>(IList iList)
-        {
-            IList<T> result = new List<T>();
-
-            foreach (T value in iList)
-                result.Add(value);
-
-            return result;
-        }
-
+        
         void DataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
         {
             e.Row.Header = (e.Row.GetIndex() + 1).ToString();

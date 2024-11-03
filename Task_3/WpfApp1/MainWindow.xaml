@@ -18,7 +18,7 @@
             </MenuItem>
         </Menu>
 
-        <DataGrid x:Name="DisplayGrid" d:ItemsSource="{d:SampleData ItemCount=10}" LoadingRow="DataGrid_LoadingRow" Margin="0,18,0,0" RenderTransformOrigin="0.5,0.5" Height="251" VerticalAlignment="Top" Grid.ColumnSpan="1" MinColumnWidth="24" HorizontalAlignment="Left" Width="810" AutomationProperties.IsColumnHeader="True"/>
+        <DataGrid ColumnWidth="*" x:Name="DisplayGrid" d:ItemsSource="{d:SampleData ItemCount=10}" LoadingRow="DataGrid_LoadingRow" Margin="0,18,0,0" RenderTransformOrigin="0.5,0.5" Height="251" VerticalAlignment="Top" Grid.ColumnSpan="1" MinColumnWidth="24" HorizontalAlignment="Left" Width="810" AutomationProperties.IsColumnHeader="True"/>
 
 
 
