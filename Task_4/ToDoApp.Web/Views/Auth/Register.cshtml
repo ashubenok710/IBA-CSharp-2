@@ -1,0 +1,166 @@
+﻿@model ToDo.Web.Models.Requests.RegisterRequest
+
+@{
+    ViewData["Title"] = "User Profile";
+}
+
+<h4>User Profile</h4>
+<br />
+
+<div class="container">    
+    <form id="create-form" asp-action="Register" method="post" onsubmit="return jQueryPost(this);">
+        <div class=" row">
+            <div class="col-md-4">
+                
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" id="txtId"/>
+                <div class="form-group margin-bottom10">
+                    <label asp-for="Name" class="control-label margin-bottom5"></label>
+                    <input asp-for="Name" class="form-control" id="txtName" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group margin-bottom10">
+                    <label asp-for="Email" class="control-label margin-bottom5"></label>
+                    <input asp-for="Email" class="form-control" id="txtEmail" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-group margin-bottom10">
+                    <label asp-for="Age" class="control-label margin-bottom5"></label>
+                    <input asp-for="Age" class="form-control" id="txtAge" />
+                    <span asp-validation-for="Age" class="text-danger"></span>
+                </div>  
+                <div class="form-group margin-bottom10">
+                    <label asp-for="EmploymentDate" class="control-label margin-bottom5"></label>
+                    <input asp-for="EmploymentDate" class="form-control" id="txtEmploymentDate" />
+                    <span asp-validation-for="EmploymentDate" class="text-danger"></span>
+                </div>
+                <div class="form-group margin-bottom10">
+                    <label asp-for="Password" class="control-label margin-bottom5"></label>
+                    <input asp-for="Password" class="form-control" id="txtPassword" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>  
+                <div class="form-group margin-bottom10">
+                    <label asp-for="ConfirmPassword" class="control-label margin-bottom5"></label>
+                    <input asp-for="ConfirmPassword" class="form-control" id="txtConfirmPassword" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+                <div class="row" style="margin-top:30px">
+                    @if (!Context.User.Identity.IsAuthenticated)
+                    {
+                        <div class="col-md-3">                    
+                            <input type="submit" value="Submit" class="btn btn-primary" />                    
+                        </div>
+                    }
+                    @if (Context.User.Identity.IsAuthenticated)
+                    {
+                        <div class="col-md-4">
+                            <a class="btn btn-secondary" asp-controller="ToDo" asp-action="Index">Back</a>                            
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-4">
+                            <a class="btn btn-secondary" asp-controller="Auth" asp-action="Index">Back Log In</a>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="col-md-1"></div>
+            <div class="col-md-4">
+                <div class=" row" style="margin-bottom:22px">
+                    <div class="col-md2">
+                        <label class="margin-bottom5">User Photo: </label>
+                    </div>
+                    <div class="col-md10">
+                        <input id="txtFile" onchange="jQueryShowImg(event)" type="file" value="Upload File" style="width:100%;"/>
+                    </div>
+                </div>
+                <div class=" row">
+                    <div class="col-md6">
+                        @if(@Model.Photo != null)
+                        {
+                            <img id="imgViewer" src="data:image/jpg;base64,@Convert.ToBase64String(@Model.Photo)" width="200" height="200" style="border: 1px solid #000000;" />
+                        } 
+                        else
+                        {
+                            <img id="imgViewer" src="" width="200" height="200" style="border: 1px solid #000000;" />    
+                        }
+                    </div>                
+                </div>            
+            </div>
+        </div>        
+    </form>    
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function() { 
+            jQueryPost = form => {
+                $('#create-form').validate();                
+
+                if ($('#create-form').valid() === true) {
+                    var formData = new FormData();
+                    var dataurl = $("#imgViewer").attr("src");
+
+                    var file = null;
+
+                    if (dataurl) { 
+                        var arr = dataurl.split(','),
+                        mime = arr[0].match(/:(.*?);/)[1],
+                        bstr = atob(arr[1]), 
+                        n = bstr.length, 
+                        u8arr = new Uint8Array(n);            
+                        while(n--) {u8arr[n] = bstr.charCodeAt(n);}        
+                        var file = new File([u8arr], "imgfile", {type:"image/png"});    
+                    }                    
+                    
+                    formData.append("file", file);
+
+                    var oRegisterRequest = {                        
+                        Name: $("#txtName")[0].value,
+                        Email: $("#txtEmail")[0].value,
+                        Age: $("#txtAge")[0].value,
+                        EmploymentDate: $("#txtEmploymentDate")[0].value,
+                        Password: $("#txtPassword")[0].value,
+                        ConfirmPassword: $("#txtConfirmPassword")[0].value                        
+                    };                    
+
+                    formData.append("RegisterRequest", JSON.stringify(oRegisterRequest));               
+
+                    try {
+                        $.ajax({
+                            type: 'POST',
+                            url: form.action,
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function(res) {
+                                if (res.success) {
+                                  window.location.href = '@(Url.Action("Index", "Auth"))'
+                                }
+                            },
+                            error: function(err) {
+                                console.log(err)
+                            }
+                        })
+                        return false;
+                    } catch (ex) {
+                        console.log(ex)
+                    }                
+                };
+            };
+
+            jQueryShowImg = event => {
+                var files = event.target.files;
+                var reader = new FileReader();
+                reader.readAsDataURL(files[0]); 
+                reader.onloadend = function() {
+                    var base64data = reader.result;
+                    $("#imgViewer").attr("src", base64data);                    
+                }
+            }; 
+        });
+    </script>
+}

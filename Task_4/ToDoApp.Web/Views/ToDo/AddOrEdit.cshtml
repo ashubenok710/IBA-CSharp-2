@@ -1,0 +1,94 @@
+﻿@model ToDo.Web.Models.ToDoItem
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h4>Add/Edit Task</h4>
+<br />
+
+<div class="container">    
+    <form id="create-form" asp-action="AddOrEdit" method="post" onsubmit="return jQueryPost(this);">
+        <div class=" row">
+            <div class="col-md-4">
+                
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                <input type="hidden" asp-for="Id"Idd="txtId"/>
+                
+                <div class="form-group margin-bottom10">
+                    <label asp-for="Name" class="control-label margin-bottom5"></label>
+                    <input asp-for="Name" class="form-control" id="txtTask" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group margin-bottom10">
+                    <label asp-for="Priority" class="control-label margin-bottom5"></label>
+                    <input asp-for="Priority" class="form-control" id="Priority" />
+                    <span asp-validation-for="Priority" class="text-danger"></span>
+                </div>
+
+                <div class="form-group margin-bottom10">
+                    <label asp-for="DueDate" class="control-label margin-bottom5"></label>
+                    <input asp-for="DueDate" class="form-control" id="dueDate" />
+                    <span asp-validation-for="DueDate" class="text-danger"></span>
+                </div>
+
+                <div class="form-group margin-bottom10" style="display: none;">
+                    <label asp-for="IsCompleted" class="control-label margin-bottom5"></label>
+                    <input asp-for="IsCompleted" class="form-control" id="isCompleted" />
+                    <span asp-validation-for="IsCompleted" class="text-danger"></span>
+                </div>
+
+                <div class="form-group margin-bottom10" style="display: none;">
+                    <label asp-for="EmployeeID" class="control-label margin-bottom5"></label>
+                    <input asp-for="EmployeeID" class="form-control" id="EmployeeID" />
+                    <span asp-validation-for="EmployeeID" class="text-danger"></span>
+                </div>
+
+                <div class="row" style="margin-top:30px">
+                    <div class="col-md-3">                    
+                        <input type="submit" value="Submit" class="btn btn-primary" />                    
+                    </div>
+                    <div class="col-md-4">
+                        <a class="btn btn-secondary" asp-action="Index">Back</a>
+                    </div>                    
+                </div>
+            </div>            
+        </div>        
+    </form>    
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>        
+        $(document).ready(function() {
+
+            jQueryPost = form => {                  
+                $('#create-form').validate();
+
+                if ($('#create-form').valid() === true) {
+                    try {
+                        $.ajax({
+                            type: 'POST',
+                            url: form.action,
+                            data: $(form).serialize(),
+                            success: function(res) {
+                                if (res.success) {
+                                    window.location.href = '@(Url.Action("Index", "ToDo"))'
+                                }
+                            },
+                            error: function(err) {
+                                console.log(err)
+                            }
+                        })
+                        return false;
+                    } catch (ex) {
+                        console.log(ex)
+                    }
+                }
+            }
+        });
+    </script>
+}

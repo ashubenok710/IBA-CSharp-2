@@ -1,0 +1,137 @@
+﻿@model ToDo.Web.Models.ToDoItem
+
+@{
+    ViewData["Title"] = "Index";
+}
+<link href="~/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<h1>Welcome!</h1>
+</br>
+
+<p align="right"><a class="btn btn-success" asp-action="AddOrEdit">Add Task</a></p>
+
+@if (TempData["AlertMessage"] != null)
+{
+    <div id="notify" class="alert alert-success" style="display:block">
+        <strong>Success!</strong> @TempData["AlertMessage"]
+    </div>
+    <script>
+        setTimeout(() => notify.style.display = "none", 5000)
+    </script>
+}
+
+<table class="table" id="toDoDataTable">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Task</th>
+            <th>Priority</th>
+            <th>Due Date</th>
+            <th>Is Completed</th>
+            <th></th>
+        </tr>
+    </thead>
+</table>
+
+@section Scripts
+{
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        var Popup, dataTable;
+        $(document).ready(function () {
+            dataTable = $("#toDoDataTable").DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "/ToDo/GetData",
+                    "type": "POST",
+                    "datatype": "json",
+                },
+                "columnDefs": [{
+                    "targets": [0],
+                    "visible": false,
+                    "searchable": false
+                }],
+                "columns": [
+                    { "data": "id", "name": "Id" },
+                    { "data": "name", "name": "Name" },
+                    { "data": "priority", "name": "Priority", "width": "150px" },
+                    { "data": "dueDate", "name": "DueDate", "width": "150px" },
+
+                    {
+                        "data": null, 
+                        "render": function (data) {
+                            return generateCheckbox(data);
+                        },
+                        "orderable": false,
+                        "searchable": false,
+                        "width": "150px"
+                    },
+                    
+                    {
+                        "data": "id", "render": function (data) {
+                            return "<a class='btn btn-primary btn-sm' onclick=location.href='@(Url.Action("AddOrEdit", "ToDo"))/" + data + "'><i class='fa fa-pencil'></i>Edit</a><a class='btn btn-danger btn-sm' style='margin-left:5px' onclick=Delete(" + data + ")><i class='fa fa-trash'></i> Delete</a>";
+                        },
+                        "orderable": false,
+                        "searchable": false,
+                        "width": "150px"
+                    }
+                ],
+            })
+        });
+
+        function generateCheckbox(data) {
+            var dataItem = JSON.stringify(data);
+            return "<input type='checkbox' id='" + data.id+ "' name='isCompleted' " + (data.isCompleted === 1 ? "checked" : "") + "  onclick=inputClick(" + dataItem + ")>";
+        }
+
+        function inputClick(data) {
+            var isChecked = 0;
+            if (jQuery('input[id=' + data.id + ']').is(':checked')) {                
+                isChecked = 1;
+            } 
+            
+            var ToDoItem = {
+                Id: data.id,
+                Name: data.name,
+                Priority: data.priority,
+                DueDate: data.dueDate,
+                IsCompleted: isChecked,
+                EmployeeID: data.employeeID
+            };
+            var DTO = JSON.stringify(ToDoItem);
+                                
+            $.ajax({
+                type: "PUT",
+                dataType: "json",
+                data: DTO,
+                contentType: "application/json; charset=utf-8",
+                url: '@Url.Action("Update", "ToDo")/' + data.id,
+                success: function (data) {
+                    if (data.success) {
+                        dataTable.ajax.reload();
+                    }
+                }
+            });
+            
+        }
+
+        function Delete(id) {
+            if (confirm('Are You Sure to Delete this Task?')) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Delete", "ToDo")/' + id,
+                    success: function (data) {
+                        if (data.success) {
+                            dataTable.ajax.reload();
+                        }
+                    }
+                });
+            }
+        }
+
+    </script>
+}
