@@ -1,12 +1,13 @@
 ﻿using ToDo.Web.Data;
 using ToDo.Web.Models;
 using ToDo.Web.Models.Requests;
-using ToDo.Web.Service;
 using ToDo.Web.Service.Logger;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
+using ToDoApp.Web.Models;
 
 namespace ToDo.Web.Controllers;
 
@@ -37,7 +38,7 @@ public class AuthController : Controller
 
         return View(loginRequest);
     }
-    public IActionResult Login(string email, string password)
+    public async Task<IActionResult> Login(string email, string password)
     {
         _logger.LogInfo("Sending Authenticating data - start");
 
@@ -56,6 +57,10 @@ public class AuthController : Controller
                 var token = response.Content.ReadAsStringAsync().Result;
                 HttpContext.Session.SetString("Token", token);
 
+                var user = _userRepository.GetByEmailAsync(email).Result;
+                var identity = (ClaimsIdentity)Request.HttpContext.User.Identity;
+                identity.AddClaim(new Claim("Name", user.Id.ToString()));
+
                 _logger.LogInfo("Sending Authenticating data - token received and saved");
                 _logger.LogInfo("Sending Authenticating data - end");
                 return RedirectToAction("Index", "ToDo");
@@ -63,13 +68,14 @@ public class AuthController : Controller
         }
         catch (Exception ex)
         {
+            _logger.LogError("An exception accured " + ex);
         }
 
         _logger.LogError("Sending Authenticating data - token is not received");
         return RedirectToAction("Index", new { msg = "Email/Password is incorrect!" });
     }
 
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
         HttpContext.Session.Remove("Token");
         return RedirectToAction("Index", "Auth");

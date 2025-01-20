@@ -1,6 +1,6 @@
 ﻿using BCrypt.Net;
 
-namespace ToDo.Web.Service;
+namespace ToDoApp.Web.Models;
 
 public class PasswordHasher
 {

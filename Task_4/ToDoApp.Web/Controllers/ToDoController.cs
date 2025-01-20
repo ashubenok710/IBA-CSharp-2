@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using System.Web.Helpers;
 
 namespace ToDo.Web.Controllers;
 
@@ -22,11 +25,11 @@ public class ToDoController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     //[ValidateAntiForgeryToken]
     public async Task<IActionResult> GetData()
     {
-        Console.WriteLine(_userRepository);
-
+        var id = HttpContext.User.Claims.First(c => c.Type == "id").Value;      
 
         var draw = Request.Form["draw"].FirstOrDefault();
         var start = Request.Form["start"].FirstOrDefault();
@@ -38,7 +41,7 @@ public class ToDoController : Controller
         int skip = start != null ? Convert.ToInt32(start) : 0;
         int recordsTotal = 0;
 
-        var taskItems = _toDoRepository.SetQueryable();
+        var taskItems = _toDoRepository.SetQueryable().Where(m => m.EmployeeID.Equals(int.Parse(id)));
 
         if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
         {
@@ -122,7 +125,7 @@ public class ToDoController : Controller
     }
 
     [HttpPost, ActionName("Delete")]
-    //[Authorize]
+    [Authorize]
     //[ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
@@ -144,7 +147,7 @@ public class ToDoController : Controller
     }
 
     [HttpPost]
-    //[Authorize]
+    [Authorize]
     //[ValidateAntiForgeryToken]
     public async Task<IActionResult> AddOrEdit(ToDoItem task)
     {

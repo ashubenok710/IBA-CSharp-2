@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 namespace ToDo.Web.Data;
 public class ToDoRepository : IToDoRepository
 {
-    private DBToDoContext _context;
+    private readonly DBToDoContext _context;
 
-    public ToDoRepository()
+    public ToDoRepository(DBToDoContext context)
     {
-        this._context = new DBToDoContext();
+        _context = context;
     }
 
     public async Task<List<ToDoItem>> GetTasks()

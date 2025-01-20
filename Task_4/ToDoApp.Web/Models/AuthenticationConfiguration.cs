@@ -1,4 +1,4 @@
-﻿namespace ToDo.Web.Service;
+﻿namespace ToDoApp.Web.Models;
 
 public class AuthenticationConfiguration
 {

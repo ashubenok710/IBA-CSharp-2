@@ -1,13 +1,12 @@
 using ToDo.Web.Data;
 using ToDo.Web.DbContexts;
-using ToDo.Web.Service;
 using ToDo.Web.Service.Logger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ToDoApp.Web.Models;
 
-using ToDoApp.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<ILoggerService, LoggerService>();
